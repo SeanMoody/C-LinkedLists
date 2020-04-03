@@ -1,0 +1,1167 @@
+Script started on Fri Apr  3 04:02:25 2020
+[?1034hbash-3.2$ ls -l
+total 56
+-rw-r--r--  1 seanmoody  staff   263 Apr  2 13:28 Makefile
+-rw-r--r--  1 seanmoody  staff  6124 Apr  3 03:49 a8.c
+-rw-r--r--  1 seanmoody  staff    43 Apr  3 04:02 a8.script
+-rw-r--r--  1 seanmoody  staff  7476 Apr  3 04:01 linkedlist.c
+-rw-r--r--  1 seanmoody  staff  1024 Apr  3 03:47 linkedlist.h
+bash-3.2$ cat linkedlist.h
+/*
+ * File:    linkedlist.h
+ * Author:  Sean Moody - 145584m@acadiau.ca
+ * Date:    2020/04/03
+ * Version: 1.0
+ * Purpose:
+ *      This file is the header file to implement a
+ *      linked list in C
+ */
+#include <stdlib.h>
+#include <stdio.h>
+
+#ifndef LINKEDLIST
+#define LINKEDLIST
+
+#define MAX_NAME_LENGTH 50
+
+//Create necessary datatypes (structs)
+struct Datatype
+{
+    char name[MAX_NAME_LENGTH];
+    int age;
+};
+
+typedef struct Node
+{
+    struct Node *next;
+    struct Node *prev;
+    int value;
+    struct Datatype dt;
+} NodeT, *NodeTP;
+
+typedef struct
+{
+    struct Node *head;
+    struct Node *tail;
+    int count;
+    struct Node *maxNode;
+} ListT, *ListTP;
+
+//Declare functions
+int addToFront(ListTP list, int value, struct Datatype datatype);
+int addToEnd(ListTP list, int value, struct Datatype datatype);
+void traverseList(ListTP list);
+void traverseListReverse(ListTP list);
+void printMax(ListTP list);
+void deleteHeadNode(ListTP list);
+void deleteTailNode(ListTP list);
+void deleteMaxNode(ListTP list);
+
+#endif
+bash-3.2$ cat linkedlist.c
+/*
+ * File:    linkedlist.c
+ * Author:  Sean Moody - 145584m@acadiau.ca
+ * Date:    2020/04/03
+ * Version: 1.0
+ * Purpose:
+ *      This file is the implementation file to implement a
+ *      linked list in C
+ */
+
+//Libraries
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include "linkedlist.h"
+
+//Add new node to front of list
+int addToFront(ListTP list, int value, struct Datatype datatype)
+{
+    //Create and initialize node
+    NodeTP node = malloc(sizeof(NodeT));
+    node->next = NULL;
+    node->prev = NULL;
+    node->dt = datatype;
+    node->value = value;
+
+    //Empty list
+    if (list->count == 0)
+    {
+        //Set initial values to node
+        list->head = node;
+        list->tail = node;
+        list->count++;
+        list->maxNode = node;
+
+        return 1;
+    }
+    //List with one element
+    else if (list->count == 1)
+    {
+        //Set head to node, and transfer other nodes
+        list->head = node;
+        node->next = list->tail;
+        list->tail->prev = node;
+        //Check for maxNode
+        if (list->maxNode->value < value)
+        {
+            list->maxNode = node;
+        }
+        list->count++;
+
+        return 1;
+    }
+    else
+    {
+        //Lots of nodes in list
+        node->next = list->head;
+        list->head->prev = node;
+        list->head = node;
+        //Check for maxNode
+        if (list->maxNode->value < value)
+        {
+            list->maxNode = node;
+        }
+        list->count++;
+
+        return 1;
+    }
+}
+
+//Add new node to end of list
+int addToEnd(ListTP list, int value, struct Datatype datatype)
+{
+    //Create and initialize node
+    NodeTP node = malloc(sizeof(NodeT));
+    node->next = NULL;
+    node->prev = NULL;
+    node->dt = datatype;
+    node->value = value;
+
+    //Empty list
+    if (list->count == 0)
+    {
+        list->head = node;
+        list->tail = node;
+        list->count++;
+        list->maxNode = node;
+
+        return 1;
+    }
+    //List with one element
+    else if (list->count == 1)
+    {
+        list->tail = node;
+        node->prev = list->head;
+        list->head->next = node;
+        //Check for maxNode
+        if (list->maxNode->value < value)
+        {
+            list->maxNode = node;
+        }
+        list->count++;
+
+        return 1;
+    }
+    else
+    {
+        //Lots of nodes in list
+        node->prev = list->tail;
+        list->tail->next = node;
+        list->tail = node;
+        //Check for maxNode
+        if (list->maxNode->value < value)
+        {
+            list->maxNode = node;
+        }
+        list->count++;
+
+        return 1;
+    }
+}
+
+//Traverse list from head to tail
+void traverseList(ListTP list)
+{
+    //Empty list
+    if (list->count == 0)
+    {
+        printf("The list is empty.\n\n");
+        return;
+    }
+    NodeTP node = list->head;
+
+    //Prompt user and traverse
+    printf("Traversing the list from head to tail:\n");
+    while (node != NULL)
+    {
+        //Print current node
+        printf("Node:\n");
+        printf("Value: %d - Name: %s - Age: %d\n\n", node->value, node->dt.name, node->dt.age);
+        node = node->next;
+    }
+}
+
+//Traverse list from tail to head
+void traverseListReverse(ListTP list)
+{
+    if (list->count == 0)
+    {
+        printf("The list is empty.\n\n");
+        return;
+    }
+    NodeTP node = list->tail;
+
+    //Prompt and traverse
+    printf("Traversing the list from tail to head:\n");
+    while (node != NULL)
+    {
+        //Print current node
+        printf("Node:\n");
+        printf("Value: %d - Name: %s - Age: %d\n\n", node->value, node->dt.name, node->dt.age);
+        node = node->prev;
+    }
+}
+
+void printMax(ListTP list)
+{
+    //Empty list
+    if (list->count == 0)
+    {
+        printf("The list is empty.\n\n");
+        return;
+    }
+    //Print max node values
+    printf("The max node in the list of a count of %d has:\n", list->count);
+    printf("A value of: %d\n", list->maxNode->value);
+    printf("And contains %s, age %d\n\n", list->maxNode->dt.name, list->maxNode->dt.age);
+}
+
+//Delete (replace) head node
+void deleteHeadNode(ListTP list)
+{
+    if (list->count == 0)
+    {
+        printf("Cannot delete from an empty list.\n\n");
+        return;
+    }
+    //Get node to delete
+    NodeTP node = list->head;
+
+    //If only one, then we only need to reinit
+    if (list->count == 1)
+    {
+        //Reinitialize list
+        list->count = 0;
+        list->maxNode = NULL;
+        list->head = NULL;
+        list->tail = NULL;
+    }
+    //Remove head node and reset other nodes
+    else
+    {
+        list->head = node->next;
+        list->count--;
+        list->head->prev = NULL;
+
+        //Check for maxNode if we are deleting the maxNode
+        if (list->maxNode == node)
+        {
+            int maxValue = 0;
+            NodeTP travNode = list->head;
+
+            while (travNode != NULL)
+            {
+                if (travNode->value > maxValue)
+                {
+                    maxValue = travNode->value;
+                    list->maxNode = travNode;
+                }
+                travNode = travNode->next;
+            }
+        }
+    }
+}
+
+//Delete (replace) tail node
+void deleteTailNode(ListTP list)
+{
+    if (list->count == 0)
+    {
+        printf("Cannot delete from an empty list.\n\n");
+        return;
+    }
+    NodeTP node = list->tail;
+
+    if (list->count == 1)
+    {
+        //Reinitialize list
+        list->count = 0;
+        list->maxNode = NULL;
+        list->head = NULL;
+        list->tail = NULL;
+    }
+    else
+    {
+        //Set values appropriately
+        list->tail = node->prev;
+        list->count--;
+        list->tail->next = NULL;
+
+        //Search for new maxNode
+        if (list->maxNode == node)
+        {
+            int maxValue = 0;
+            NodeTP travNode = list->head;
+
+            while (travNode != NULL)
+            {
+                if (travNode->value > maxValue)
+                {
+                    maxValue = travNode->value;
+                    list->maxNode = travNode;
+                }
+                travNode = travNode->next;
+            }
+        }
+    }
+}
+
+//Delete (replace) max node
+void deleteMaxNode(ListTP list)
+{
+    if (list->count == 0)
+    {
+        printf("Cannot delete from an empty list.\n\n");
+        return;
+    }
+    NodeTP node = list->maxNode;
+
+    if (list->count == 1)
+    {
+        //Reinitialize list
+        list->count = 0;
+        list->maxNode = NULL;
+        list->head = NULL;
+        list->tail = NULL;
+    }
+    else
+    {
+        //If we're the head node, just call deleteHeadNode
+        if (list->head == node)
+        {
+            deleteHeadNode(list);
+            return;
+        }
+        else if (list->tail == node)
+        {
+            //Same if we're the tail node
+            deleteTailNode(list);
+            return;
+        }
+        else
+        {
+            //Middle somewhere, set values appropriately
+            NodeTP before = node->prev;
+            NodeTP after = node->next;
+            before->next = after;
+            after->prev = before;
+
+            //Search for new maxNode
+            int maxValue = 0;
+            NodeTP travNode = list->head;
+
+            while (travNode != NULL)
+            {
+                if (travNode->value > maxValue)
+                {
+                    maxValue = travNode->value;
+                    list->maxNode = travNode;
+                }
+                travNode = travNode->next;
+            }
+            //Decrement count
+            list->count--;
+        }
+    }
+}
+bash-3.2$ cat linke[K[K[K[K[Ka8.c
+/*
+ * File:    a8.c
+ * Author:  Sean Moody - 145584m@acadiau.ca
+ * Date:    2020/04/03
+ * Version: 1.0
+ * Purpose:
+ *      This file is the project file to create a linked
+ *      list in C. 
+ */
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include "linkedlist.h"
+
+//Build the list struct with a constructor
+void constructorListT(ListTP this)
+{
+    this->count = 0;
+    this->maxNode = NULL;
+    this->head = NULL;
+    this->tail = NULL;
+}
+
+int main()
+{
+    //Variables
+    char input[20];
+
+    //List struct and pointer/constructor
+    ListT list;
+    constructorListT(&list);
+
+    //Prompt user
+    printf("\nWelcome to Sean Moody's Linked List Program\n");
+    printf("Enter a command, or 'help' to list all commands\n\n");
+    //Input loop
+    while (1)
+    {
+        //Print list state after each update
+        printf("List State:\n");
+        if (list.count >= 1)
+        {
+            printf("Count: %d\n", list.count);
+            printf("Head:\n");
+            printf("Value %d - Name %s - Age %d\n", list.head->value, list.head->dt.name, list.head->dt.age);
+            printf("Tail:\n");
+            printf("Value %d - Name %s - Age %d\n", list.tail->value, list.tail->dt.name, list.tail->dt.age);
+            printf("Max:\n");
+            printf("Value %d - Name %s - Age %d\n\n", list.maxNode->value, list.maxNode->dt.name, list.maxNode->dt.age);
+        }
+        else
+        {
+            printf("Empty list\n\n");
+        }
+        //Take input
+        scanf(" %s", input);
+
+        //Determine input
+        if ((strstr(input, "quit") || strstr(input, "exit")) == 1)
+        {
+            return EXIT_SUCCESS;
+        }
+        else if (strstr(input, "help") != NULL)
+        {
+            //Print help menu
+            printf("Help Menu:\n\n");
+            printf("'help'\nShows this menu.\n\n");
+
+            printf("'quit' or 'exit'\nQuits the program.\n\n");
+
+            printf("'add'\n");
+            printf("Adds a node to the desired position.\n");
+            printf("[positon]: F for front, or E for end.\n");
+            printf("[name]: Person's Name. \n");
+            printf("[age]: Person's Age. Enter as a number.\n");
+            printf("[value]: Value to determine maximum. Enter as a number.\n\n");
+
+            printf("'traverse'\n");
+            printf("Traverses the list in the specified direction.\n");
+            printf("[direction]: F for forward, or R for reverse\n\n");
+
+            printf("'max'\nPrints the max node.\n\n");
+
+            printf("'delete'\n");
+            printf("Deletes the specified node\n");
+            printf("[node]: H for head node, T for tail node, M for max node\n\n");
+        }
+        else if (strstr(input, "add") != NULL)
+        {
+            //Add a node to the list
+
+            //Variables
+            char position;
+            char name[MAX_NAME_LENGTH];
+            int age;
+            int value;
+
+            struct Datatype data;
+
+            //Gather data for a node
+            printf("\nAdding a node:\n");
+            printf("Enter F to add to the front, or E to add to the end.\n");
+            scanf(" %c", &position);
+            printf("Enter a name.\n");
+            scanf(" %50[^\n]", name);
+            printf("Enter their age.\n");
+            scanf(" %d", &age);
+            printf("Enter their value.\n");
+            scanf(" %d", &value);
+
+            //Copy to datatype struct
+            strcpy(data.name, name);
+            data.age = age;
+
+            //Determine if adding to front or back
+            switch (position)
+            {
+            //Front
+            case 'F':
+            case 'f':
+                if (addToFront(&list, value, data) == 0)
+                {
+                    printf("Add error, try again.\n");
+                    return EXIT_FAILURE;
+                }
+                else
+                {
+                    printf("Node added.\n\n");
+                }
+                break;
+            //End
+            case 'E':
+            case 'e':
+                if (addToEnd(&list, value, data) == 0)
+                {
+                    printf("Add error, try again.\n");
+                    return EXIT_FAILURE;
+                }
+                else
+                {
+                    printf("Node added.\n\n");
+                }
+                break;
+            //Wrong position
+            default:
+                printf("Invalid position, try again\n");
+            }
+        }
+        else if (strstr(input, "traverse") != NULL)
+        {
+            //Traverse List
+
+            //Variables
+            char direction;
+
+            //Determine direction
+            printf("Enter F to traverse forward, or R to traverse in reverse\n");
+            scanf(" %c", &direction);
+
+            switch (direction)
+            {
+            //Forward
+            case 'F':
+            case 'f':
+                traverseList(&list);
+                break;
+            //Reverse
+            case 'R':
+            case 'r':
+                traverseListReverse(&list);
+                break;
+            //Invalid
+            default:
+                printf("Invalid direction, try again\n");
+            }
+        }
+        //Print max node in list
+        else if (strstr(input, "max") != NULL)
+        {
+            printMax(&list);
+        }
+        else if (strstr(input, "delete") != NULL)
+        {
+            //Delete node
+            char node;
+
+            //Determine where to delete
+            printf("Enter H for the head node, T for the tail node, M for the max node\n");
+            scanf(" %c", &node);
+
+            switch (node)
+            {
+            //Head
+            case 'H':
+            case 'h':
+                deleteHeadNode(&list);
+                break;
+            //Tail
+            case 'T':
+            case 't':
+                deleteTailNode(&list);
+                break;
+            //Max
+            case 'M':
+            case 'm':
+                deleteMaxNode(&list);
+                break;
+            //Invalid
+            default:
+                printf("Invalid direction, try again\n");
+            }
+        }
+    }
+}
+bash-3.2$ make all
+gcc -Wall -Wextra -pedantic -c linkedlist.c
+gcc -Wall -Wextra -pedantic -o a8 a8.c linkedlist.o
+bash-3.2$ ls -l
+total 128
+-rw-r--r--  1 seanmoody  staff    263 Apr  2 13:28 Makefile
+-rwxr-xr-x  1 seanmoody  staff  13372 Apr  3 04:02 a8
+-rw-r--r--  1 seanmoody  staff   6124 Apr  3 03:49 a8.c
+-rw-r--r--  1 seanmoody  staff  12331 Apr  3 04:02 a8.script
+-rw-r--r--  1 seanmoody  staff   7476 Apr  3 04:01 linkedlist.c
+-rw-r--r--  1 seanmoody  staff   1024 Apr  3 03:47 linkedlist.h
+-rw-r--r--  1 seanmoody  staff   4340 Apr  3 04:02 linkedlist.o
+bash-3.2$ ./a8
+
+Welcome to Sean Moody's Linked List Program
+Enter a command, or 'help' to list all commands
+
+List State:
+Empty list
+
+ta  help
+Help Menu:
+
+'help'
+Shows this menu.
+
+'quit' or 'exit'
+Quits the program.
+
+'add'
+Adds a node to the desired position.
+[positon]: F for front, or E for end.
+[name]: Person's Name. 
+[age]: Person's Age. Enter as a number.
+[value]: Value to determine maximum. Enter as a number.
+
+'traverse'
+Traverses the list in the specified direction.
+[direction]: F for forward, or R for reverse
+
+'max'
+Prints the max node.
+
+'delete'
+Deletes the specified node
+[node]: H for head node, T for tail node, M for max node
+
+List State:
+Empty list
+
+traverse
+Enter F to traverse forward, or R to traverse in reverse
+F
+The list is empty.
+
+List State:
+Empty list
+
+traverse 
+Enter F to traverse forward, or R to traverse in reverse
+R
+The list is empty.
+
+List State:
+Empty list
+
+trave     delete
+Enter H for the head node, T for the tail node, M for the max node
+H
+Cannot delete from an empty list.
+
+List State:
+Empty list
+
+traverse
+Enter F to traverse forward, or R to traverse in reverse
+F
+The list is empty.
+
+List State:
+Empty list
+
+delete
+Enter H for the head node, T for the tail node, M for the max node
+T
+Cannot delete from an empty list.
+
+List State:
+Empty list
+
+delete
+Enter H for the head node, T for the tail node, M for the max node
+M
+Cannot delete from an empty list.
+
+List State:
+Empty list
+
+add
+
+Adding a node:
+Enter F to add to the front, or E to add to the end.
+F
+Enter a name.
+Darcy Benoit
+Enter their age.
+40
+Enter their value.
+99
+Node added.
+
+List State:
+Count: 1
+Head:
+Value 99 - Name Darcy Benoit - Age 40
+Tail:
+Value 99 - Name Darcy Benoit - Age 40
+Max:
+Value 99 - Name Darcy Benoit - Age 40
+
+add
+
+Adding a node:
+Enter F to add to the front, or E to add to the end.
+F
+Enter a name.
+Sean Moody
+Enter their age.
+21
+Enter their value.
+75
+Node added.
+
+List State:
+Count: 2
+Head:
+Value 75 - Name Sean Moody - Age 21
+Tail:
+Value 99 - Name Darcy Benoit - Age 40
+Max:
+Value 99 - Name Darcy Benoit - Age 40
+
+add
+
+Adding a node:
+Enter F to add to the front, or E to add to the end.
+E
+Enter a name.
+The Lasy t Man Standing
+Enter their age.
+0 100
+Enter their value.
+30
+Node added.
+
+List State:
+Count: 3
+Head:
+Value 75 - Name Sean Moody - Age 21
+Tail:
+Value 30 - Name The Last Man Standing - Age 100
+Max:
+Value 99 - Name Darcy Benoit - Age 40
+
+add
+
+Adding a node:
+Enter F to add to the front, or E to add to the end.
+F
+Enter a name.
+Heaa ds
+Enter their age.
+20
+Enter their value.
+5
+Node added.
+
+List State:
+Count: 4
+Head:
+Value 5 - Name Heads - Age 20
+Tail:
+Value 30 - Name The Last Man Standing - Age 100
+Max:
+Value 99 - Name Darcy Benoit - Age 40
+
+add
+
+Adding a node:
+Enter F to add to the front, or E to add to the end.
+Tail    F
+Enter a name.
+Tails     X
+Enter their age.
+30
+Enter their value.
+5
+Node added.
+
+List State:
+Count: 5
+Head:
+Value 5 - Name X - Age 30
+Tail:
+Value 30 - Name The Last Man Standing - Age 100
+Max:
+Value 99 - Name Darcy Benoit - Age 40
+
+add
+
+Adding a node:
+Enter F to add to the front, or E to add to the end.
+Tails     ^HE   E
+Enter a name.
+Tails
+Enter their age.
+40
+Enter their value.
+3 7
+Node added.
+
+List State:
+Count: 6
+Head:
+Value 5 - Name X - Age 30
+Tail:
+Value 7 - Name Tails - Age 40
+Max:
+Value 99 - Name Darcy Benoit - Age 40
+
+add]
+
+Adding a node:
+Enter F to add to the front, or E to add to the end.
+
+H F
+Enter a name.
+Heads
+Enter their age.
+T 9
+Enter their value.
+30
+Node added.
+
+List State:
+Count: 7
+Head:
+Value 30 - Name Heads - Age 9
+Tail:
+Value 7 - Name Tails - Age 40
+Max:
+Value 99 - Name Darcy Benoit - Age 40
+
+delete
+Enter H for the head node, T for the tail node, M for the max node
+H
+List State:
+Count: 6
+Head:
+Value 5 - Name X - Age 30
+Tail:
+Value 7 - Name Tails - Age 40
+Max:
+Value 99 - Name Darcy Benoit - Age 40
+
+traverse
+Enter F to traverse forward, or R to traverse in reverse
+F
+Traversing the list from head to tail:
+Node:
+Value: 5 - Name: X - Age: 30
+
+Node:
+Value: 5 - Name: Heads - Age: 20
+
+Node:
+Value: 75 - Name: Sean Moody - Age: 21
+
+Node:
+Value: 99 - Name: Darcy Benoit - Age: 40
+
+Node:
+Value: 30 - Name: The Last Man Standing - Age: 100
+
+Node:
+Value: 7 - Name: Tails - Age: 40
+
+List State:
+Count: 6
+Head:
+Value 5 - Name X - Age 30
+Tail:
+Value 7 - Name Tails - Age 40
+Max:
+Value 99 - Name Darcy Benoit - Age 40
+
+delete
+Enter H for the head node, T for the tail node, M for the max node
+T
+List State:
+Count: 5
+Head:
+Value 5 - Name X - Age 30
+Tail:
+Value 30 - Name The Last Man Standing - Age 100
+Max:
+Value 99 - Name Darcy Benoit - Age 40
+
+traverse
+Enter F to traverse forward, or R to traverse in reverse
+F
+Traversing the list from head to tail:
+Node:
+Value: 5 - Name: X - Age: 30
+
+Node:
+Value: 5 - Name: Heads - Age: 20
+
+Node:
+Value: 75 - Name: Sean Moody - Age: 21
+
+Node:
+Value: 99 - Name: Darcy Benoit - Age: 40
+
+Node:
+Value: 30 - Name: The Last Man Standing - Age: 100
+
+List State:
+Count: 5
+Head:
+Value 5 - Name X - Age 30
+Tail:
+Value 30 - Name The Last Man Standing - Age 100
+Max:
+Value 99 - Name Darcy Benoit - Age 40
+
+deme  lete  
+Enter H for the head node, T for the tail node, M for the max node
+M
+List State:
+Count: 4
+Head:
+Value 5 - Name X - Age 30
+Tail:
+Value 30 - Name The Last Man Standing - Age 100
+Max:
+Value 75 - Name Sean Moody - Age 21
+
+traverse
+Enter F to traverse forward, or R to traverse in reverse
+F
+Traversing the list from head to tail:
+Node:
+Value: 5 - Name: X - Age: 30
+
+Node:
+Value: 5 - Name: Heads - Age: 20
+
+Node:
+Value: 75 - Name: Sean Moody - Age: 21
+
+Node:
+Value: 30 - Name: The Last Man Standing - Age: 100
+
+List State:
+Count: 4
+Head:
+Value 5 - Name X - Age 30
+Tail:
+Value 30 - Name The Last Man Standing - Age 100
+Max:
+Value 75 - Name Sean Moody - Age 21
+
+delete
+Enter H for the head node, T for the tail node, M for the max node
+H
+List State:
+Count: 3
+Head:
+Value 5 - Name Heads - Age 20
+Tail:
+Value 30 - Name The Last Man Standing - Age 100
+Max:
+Value 75 - Name Sean Moody - Age 21
+
+delete
+Enter H for the head node, T for the tail node, M for the max node
+H
+List State:
+Count: 2
+Head:
+Value 75 - Name Sean Moody - Age 21
+Tail:
+Value 30 - Name The Last Man Standing - Age 100
+Max:
+Value 75 - Name Sean Moody - Age 21
+
+delete
+Enter H for the head node, T for the tail node, M for the max node
+M
+List State:
+Count: 1
+Head:
+Value 30 - Name The Last Man Standing - Age 100
+Tail:
+Value 30 - Name The Last Man Standing - Age 100
+Max:
+Value 30 - Name The Last Man Standing - Age 100
+
+delete
+Enter H for the head node, T for the tail node, M for the max node
+M
+List State:
+Empty list
+
+add  
+
+Adding a node:
+Enter F to add to the front, or E to add to the end.
+F
+Enter a name.
+LOW
+Enter their age.
+30
+Enter their value.
+1
+Node added.
+
+List State:
+Count: 1
+Head:
+Value 1 - Name LOW - Age 30
+Tail:
+Value 1 - Name LOW - Age 30
+Max:
+Value 1 - Name LOW - Age 30
+
+add
+
+Adding a node:
+Enter F to add to the front, or E to add to the end.
+E
+Enter a name.
+MED
+Enter their age.
+30
+Enter their value.
+30
+Node added.
+
+List State:
+Count: 2
+Head:
+Value 1 - Name LOW - Age 30
+Tail:
+Value 30 - Name MED - Age 30
+Max:
+Value 30 - Name MED - Age 30
+
+add
+
+Adding a node:
+Enter F to add to the front, or E to add to the end.
+E
+Enter a name.
+HIGH
+Enter their age.
+0 90
+Enter their value.
+90
+Node added.
+
+List State:
+Count: 3
+Head:
+Value 1 - Name LOW - Age 30
+Tail:
+Value 90 - Name HIGH - Age 90
+Max:
+Value 90 - Name HIGH - Age 90
+
+max
+The max node in the list of a count of 3 has:
+A value of: 90
+And contains HIGH, age 90
+
+List State:
+Count: 3
+Head:
+Value 1 - Name LOW - Age 30
+Tail:
+Value 90 - Name HIGH - Age 90
+Max:
+Value 90 - Name HIGH - Age 90
+
+delete
+Enter H for the head node, T for the tail node, M for the max node
+T
+List State:
+Count: 2
+Head:
+Value 1 - Name LOW - Age 30
+Tail:
+Value 30 - Name MED - Age 30
+Max:
+Value 30 - Name MED - Age 30
+
+max
+The max node in the list of a count of 2 has:
+A value of: 30
+And contains MED, age 30
+
+List State:
+Count: 2
+Head:
+Value 1 - Name LOW - Age 30
+Tail:
+Value 30 - Name MED - Age 30
+Max:
+Value 30 - Name MED - Age 30
+
+delete
+Enter H for the head node, T for the tail node, M for the max node
+T
+List State:
+Count: 1
+Head:
+Value 1 - Name LOW - Age 30
+Tail:
+Value 1 - Name LOW - Age 30
+Max:
+Value 1 - Name LOW - Age 30
+
+max
+The max node in the list of a count of 1 has:
+A value of: 1
+And contains LOW, age 30
+
+List State:
+Count: 1
+Head:
+Value 1 - Name LOW - Age 30
+Tail:
+Value 1 - Name LOW - Age 30
+Max:
+Value 1 - Name LOW - Age 30
+
+delete
+Enter H for the head node, T for the tail node, M for the max node
+M
+List State:
+Empty list
+
+max
+The list is empty.
+
+List State:
+Empty list
+
+exit
+bash-3.2$ exit
+exit
+
+Script done on Fri Apr  3 04:08:28 2020
